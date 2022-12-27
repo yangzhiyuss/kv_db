@@ -1,8 +1,9 @@
 package test
 
-import (
+ import (
 	"kv-db/physical"
 	"os"
+	"testing"
 )
 
 func getStorage() *physical.Storage {
@@ -12,6 +13,12 @@ func getStorage() *physical.Storage {
 	return storage
 }
 
-func write() {
-	select {}
+func TestWrite(t *testing.T) {
+	storage := getStorage()
+	data01 := "ssssssss"
+	b1 := []byte(data01)
+	offset := storage.Write(b1)
+	b2 := storage.Read(offset)
+	data02 := string(b2)
+	println(data02)
 }

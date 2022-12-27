@@ -11,7 +11,7 @@ type ValueRef struct {
 	_address  int64
 }
 
-func (vr *ValueRef) address() int64 {
+func (vr *ValueRef) Address() int64 {
 	return vr._address
 }
 
@@ -34,7 +34,7 @@ func (vr *ValueRef) bytesToReferent(byteArr []byte) interface{} {
 	return referent
 }
 
-func (vr *ValueRef) get(valueStorage *physical.Storage) interface{} {
+func (vr *ValueRef) Get(valueStorage *physical.Storage) interface{} {
 	//referent为空，
 	//地址不为空，还没有进行读取
 	if vr._referent == nil && vr._address != 0 {
@@ -45,7 +45,7 @@ func (vr *ValueRef) get(valueStorage *physical.Storage) interface{} {
 	return vr._referent
 }
 
-func (vr *ValueRef) store(valueStorage *physical.Storage) {
+func (vr *ValueRef) Store(valueStorage *physical.Storage) {
 	// referent不为空，
 	//地址为0，还没有进行存储
 	if vr._referent != nil && vr._address == 0 {

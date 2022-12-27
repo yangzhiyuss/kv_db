@@ -1,26 +1,47 @@
 package logical
 
 import (
-	"encoding/json"
-	"fmt"
+	"google.golang.org/protobuf/proto"
 	"kv-db/physical"
+	nodebytes "kv-db/protoc"
 )
 
 type BinaryNode struct {
 	LeftRef  *BinaryNodeRef
 	Key      string
-	Value    *ValueRef
+	ValueRef    *ValueRef
 	RightRef *BinaryNodeRef
 	Length   int64
 }
 
 func (bn *BinaryNode) storeRefs(valueStorage *physical.Storage, indexStorage *physical.Storage) {
-	bn.Value.store(valueStorage)
-	bn.LeftRef.store(valueStorage, indexStorage)
-	bn.RightRef.store(valueStorage, indexStorage)
+	bn.ValueRef.Store(valueStorage)
+	bn.LeftRef.Store(valueStorage, indexStorage)
+	bn.RightRef.Store(valueStorage, indexStorage)
 }
 
-func (bn *BinaryNode) fromNode(param map[string]interface{}) {
+func (bn *BinaryNode) fromNode(param map[string]interface{}) *BinaryNode {
+	newNode := &BinaryNode{
+		LeftRef: bn.LeftRef,
+		Key: bn.Key,
+		ValueRef: bn.ValueRef,
+		RightRef: bn.RightRef,
+		Length: bn.Length,
+	}
+
+	if param["left_ref"] != nil {
+		nodeRef := param["left_ref"].(*BinaryNodeRef)
+		newNode.Length += nodeRef.Length() - bn.LeftRef.Length()
+		newNode.LeftRef = nodeRef
+	} else if param["right_ref"] != nil {
+		nodeRef := param["left_ref"].(*BinaryNodeRef)
+		newNode.Length += nodeRef.Length() - bn.RightRef.Length()
+		newNode.LeftRef = nodeRef
+	} else if param["value_ref"] != nil {
+		newValue := param["value_ref"].(*ValueRef)
+		newNode.ValueRef = newValue
+	}
+	return newNode
 
 }
 
@@ -30,32 +51,41 @@ type BinaryNodeRef struct {
 	ValueRef
 }
 
+func (bnr *BinaryNodeRef) Length() int64 {
+	if bnr._referent == nil && bnr._address != 0 {
+		return -1
+	}
+	if bnr._referent != nil {
+		node:= bnr._referent.(*BinaryNode)
+		return node.Length
+	} else {
+		return 0
+	}
+}
+
 // 对值进行序列化
 func (bnr *BinaryNodeRef) referentToBytes(referent interface{}) []byte {
 	binaryNode := referent.(*BinaryNode)
-	data := map[string]interface{}{
-		"left":   binaryNode.LeftRef.address(),
-		"key":    binaryNode.Key,
-		"value":  binaryNode.Value.address(),
-		"right":  binaryNode.RightRef.address(),
-		"length": binaryNode.Length,
+	data := &nodebytes.BinaryNodeRefBytes{
+		LeftRef: binaryNode.LeftRef.Address(),
+		Key: binaryNode.Key,
+		ValueRef: binaryNode.ValueRef.Address(),
+		RightRef: binaryNode.RightRef.Address(),
+		Length: binaryNode.Length,
 	}
-	byteArr, _ := json.Marshal(data)
+	byteArr, _ := proto.Marshal(data)
 	return byteArr
 }
 
 // 对值反序列化
 func (bnr *BinaryNodeRef) bytesToReferent(byteArr []byte) interface{} {
-	var data map[string]interface{}
-	err := json.Unmarshal(byteArr, &data)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	leftRef := &BinaryNodeRef{ValueRef{_address: int64(data["left"].(float64))}}
-	key := data["key"].(string)
-	valueRef := &ValueRef{_address: int64(data["value"].(float64))}
-	rightRef := &BinaryNodeRef{ValueRef{_address: int64(data["right"].(float64))}}
-	length := int64(data["length"].(float64))
+	data := new(nodebytes.BinaryNodeRefBytes)
+	_ =proto.Unmarshal(byteArr, data)
+	leftRef := &BinaryNodeRef{ValueRef{_address: data.LeftRef}}
+	key := data.Key
+	valueRef := &ValueRef{_address: data.ValueRef}
+	rightRef := &BinaryNodeRef{ValueRef{_address: data.RightRef}}
+	length := data.Length
 	return &BinaryNode{leftRef, key, valueRef, rightRef, length}
 }
 
@@ -65,7 +95,7 @@ func (bnr *BinaryNodeRef) prepareToStore(valueStorage *physical.Storage, indexSt
 	}
 }
 
-func (bnr *BinaryNodeRef) get(indexStorage *physical.Storage) *BinaryNode {
+func (bnr *BinaryNodeRef) Get(indexStorage *physical.Storage) *BinaryNode {
 	if bnr._referent == nil && bnr._address != 0 {
 		data := indexStorage.Read(bnr._address)
 		bnr._referent = bnr.bytesToReferent(data)
@@ -73,7 +103,7 @@ func (bnr *BinaryNodeRef) get(indexStorage *physical.Storage) *BinaryNode {
 	return bnr._referent.(*BinaryNode)
 }
 
-func (bnr *BinaryNodeRef) store(valueStorage *physical.Storage, indexStorage *physical.Storage) {
+func (bnr *BinaryNodeRef) Store(valueStorage *physical.Storage, indexStorage *physical.Storage) {
 	if bnr._referent != nil && bnr._address == 0 {
 		bnr.prepareToStore(valueStorage, indexStorage)
 		data := bnr.referentToBytes(bnr._referent)

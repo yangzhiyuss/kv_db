@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package="./;nodebytes";
+package protoc;
+
+message BinaryNodeRefBytes {
+  int64 LeftRef = 1;
+  string Key = 2;
+  int64 ValueRef = 3;
+  int64 RightRef = 4;
+  int64 Length = 5;
+}
