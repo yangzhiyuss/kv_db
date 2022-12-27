@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="59b80598-8651-428c-b9ae-a5f9082d6131" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logical/binary_node_ref.go" beforeDir="false" afterPath="$PROJECT_DIR$/logical/binary_node_ref.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logical/value_ref.go" beforeDir="false" afterPath="$PROJECT_DIR$/logical/value_ref.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/index" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/physical_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/test/physical_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/value" beforeDir="false" afterPath="$PROJECT_DIR$/protoc/nodebytes.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
